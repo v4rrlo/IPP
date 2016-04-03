@@ -27,8 +27,8 @@ typedef struct Hospital{
 }hospital_t;
 
 static hospital_t *hospital = NULL;
-static disease_t *tailDiseases = NULL;
-static patient_t *tailPatients = NULL;
+static disease_t *tailDiseases = NULL;  //pointer to last disease in hospital
+static patient_t *tailPatients = NULL;  //pointer to last patient in hospital
 
 static int debugMode = 0;
 static int numberOfGlobalDiseases = 0;
@@ -106,17 +106,6 @@ void tearDownStructure(){
 /*  *********************************   */
 /*  |  PATIENT-SPECIFIC FUNCTIONS   |   */
 /*  *********************************   */
-void printPatients(){
-    puts("Printing patients");
-    patient_t *current = hospital->patients;
-    //puts("PRE");
-    while(current != NULL){
-        printf("\t%s\n", current->name);
-        current = current->next;
-    }
-    //puts("AFTER");
-}
-
 patient_t *findPatient(char *name){
     patient_t *current = hospital->patients;
     while (current != NULL){
@@ -278,16 +267,16 @@ void newDiseaseEnterDescription(char *name, char *description){
 }
 
 void newDiseaseCopyDescription(char *name1, char *name2){
-    patient_t *first = findPatient(name1);
-    if (first == NULL){ //first patient not fount - create it
-        first = addNewPatient(name1);
+    patient_t *target = findPatient(name1);
+    if (target == NULL){ //target patient not fount - create it
+        target = addNewPatient(name1);
     }
-    patient_t *second = findPatient(name2);
-    if (first != NULL && second != NULL){ //if not found - both pointers are NULLs
-        disease_t *foundDisease = findLastAddedDisease(&second);
+    patient_t *source = findPatient(name2);
+    if (target != NULL && source != NULL){ //if not found - both pointers are NULLs
+        disease_t *foundDisease = findLastAddedDisease(&source);
         if(foundDisease != NULL){
-            //we have to add found disease to the first patient
-            addNewDiseaseToPatient(&first, &first->diseases, foundDisease);
+            //we have to add found disease to the target patient
+            addNewDiseaseToPatient(&target, &target->diseases, foundDisease);
             printf("OK\n");
         }
         else{
