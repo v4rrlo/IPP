@@ -1,5 +1,6 @@
 #include <string.h> //isspace
 #include <stdio.h> //getchar
+#include <ctype.h> //for isspace
 
 #include "global.h"
 
