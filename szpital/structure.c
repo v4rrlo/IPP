@@ -9,8 +9,8 @@ typedef struct Node{
 
 typedef struct Patient{
     struct Patient *next;   //pointer to next patient
-    struct Node *diseases;  //pointer to a list of patient's diseases
-    struct Node *tail;      //pointer to last of patient's diseases
+    node_t *diseases;  //pointer to a list of patient's diseases
+    node_t *tail;      //pointer to last of patient's diseases
     char *name;
 }patient_t;
 
@@ -149,7 +149,7 @@ patient_t *addNewPatient(char *name){
 /*  |  DISEASE-SPECIFIC FUNCTIONS   |   */
 /*  *********************************   */
 disease_t *addNewDisease(char *description){
-    disease_t *current = (disease_t *)&hospital->diseases;
+    disease_t **current = &hospital->diseases;
     disease_t *new = malloc(sizeof(disease_t));
     new->next = NULL;
     new->referenceCount = 0;
@@ -157,15 +157,14 @@ disease_t *addNewDisease(char *description){
     new->id = counterOfDiseases++;
     strcpy(new->description, description);
     numberOfGlobalDiseases++;
-    if (current){
-        while (current->next != NULL){
-            current = current->next;
-        }
-        current->next = new;
+    if (*current == NULL){
+        *current = new;
+        tailDiseases = new;
+        return *current;
     }
-    else{
-        current = new;
-    }
+    tailDiseases->next = new;
+    tailDiseases = tailDiseases->next;
+    return tailDiseases;
     return new;
 }
 
@@ -185,6 +184,8 @@ void deleteDisease(int idDescription){
         }
         else{
             previous->next = NULL;
+            tailDiseases = previous; //current is last node, so after deleting it
+                                     //previous is going to be the last one
         }
         free(current->description);
         free(current);
@@ -196,6 +197,7 @@ void deleteDisease(int idDescription){
         }
         else{
             hospital->diseases = NULL;
+            tailDiseases = hospital->diseases;
         }
         free(current->description);
         free(current);
