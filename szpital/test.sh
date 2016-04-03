@@ -15,8 +15,7 @@ if [ "$(find $PROG)" = "$PROG" ]; then
         DIFE="diff /tmp/$PROG.err $FILENAME.err"
 		EXEC="./$PROG $DEBUG <$i 1>/tmp/$PROG.out 2>/tmp/$PROG.err"
         if [ $1 = "-v" ]; then
-            OUTEX="$(eval "./"$PROG" "$1" <"$i" 1>/tmp/"$PROG".out 2>/tmp/"$PROG".err")"
-			OUTEX="$(eval "$EXEC")"	
+			OUTEX="$(eval "$EXEC")"
             OUTDIFO="$(eval "$DIFO")"
             OUTDIFE="$(eval "$DIFE")"
 			if [ -n "$OUTDIFO" ] || [ -n "$OUTDIFE" ]; then
