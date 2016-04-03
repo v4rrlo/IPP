@@ -73,6 +73,7 @@ void tearDownPatients(patient_t **patient){
     while(current != NULL){
         tearDownPatientsDiseases(&current->diseases);
         next = current->next;
+        current->tail = NULL;
         free(current->name);
         free(current);
         current = next;
@@ -216,40 +217,29 @@ void decreaseReferenceCount(disease_t *disease){
     }
 }
 
-void addNewDiseaseToPatient(node_t **list, disease_t *disease){
-    node_t *current = (node_t*)list;
-    node_t *new = (node_t *)malloc(sizeof(node_t));
+void addNewDiseaseToPatient(patient_t **patient, node_t **list, disease_t *disease){
+    node_t **current = list;
+    node_t *new = malloc(sizeof(node_t));
     new->next = NULL;
     new->value = (void *)disease;
     increaseReferenceCount(disease);
-    if (current){
-        while (current->next != NULL){
-            current = current->next;
-        }
-        current->next = new;
+    if(*current == NULL){
+        *current = new;
+        (*patient)->tail = new;
+        return;
     }
-    else{
-        current = new;
-    }
+    (*patient)->tail->next = new;
+    (*patient)->tail = (*patient)->tail->next;
+    return;
 }
 
-disease_t *findLastAddedDisease(char *name){
-    patient_t *current = findPatient(name);
-    // we found given patient -- current != NULL because we are
-    // sure that given patient exists
-    node_t *currDisease = NULL;
-    if (current->diseases != NULL){
-        currDisease = (node_t *)&current->diseases;
+disease_t *findLastAddedDisease(patient_t **patient){
+    if((*patient)->tail != NULL){
+        return (disease_t *)((*patient)->tail->value);
     }
     else{
         return NULL;
     }
-
-    while (currDisease->next != NULL){
-        currDisease = currDisease->next;
-    }
-    // next is NULL, so we have found last patient's disease
-    return (disease_t *)currDisease->value;
 }
 
 node_t *findNthPatientsDisease(node_t **list, int n){
@@ -282,7 +272,7 @@ void newDiseaseEnterDescription(char *name, char *description){
     if(patient == NULL){
         patient = addNewPatient(name);
     }
-    addNewDiseaseToPatient(&patient->diseases, newDisease);
+    addNewDiseaseToPatient(&patient, &patient->diseases, newDisease);
     printf("OK\n");
     printNumberOfGlobalDiseases();
 }
@@ -294,10 +284,10 @@ void newDiseaseCopyDescription(char *name1, char *name2){
     }
     patient_t *second = findPatient(name2);
     if (first != NULL && second != NULL){ //if not found - both pointers are NULLs
-        disease_t *foundDisease = findLastAddedDisease(name2);
+        disease_t *foundDisease = findLastAddedDisease(&second);
         if(foundDisease != NULL){
             //we have to add found disease to the first patient
-            addNewDiseaseToPatient(&first->diseases, foundDisease);
+            addNewDiseaseToPatient(&first, &first->diseases, foundDisease);
             printf("OK\n");
         }
         else{
@@ -351,6 +341,7 @@ void deletePatientData(char *name){
     patient_t *patient = findPatient(name);
     if (patient != NULL){
         tearDownPatientsDiseases(&patient->diseases);
+        patient->tail = NULL;
         printf("OK\n");
     }
     else{
