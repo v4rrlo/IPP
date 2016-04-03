@@ -10,6 +10,7 @@ typedef struct Node{
 typedef struct Patient{
     struct Patient *next;   //pointer to next patient
     struct Node *diseases;  //pointer to a list of patient's diseases
+    struct Node *tail;      //pointer to last of patient's diseases
     char *name;
 }patient_t;
 
@@ -25,7 +26,10 @@ typedef struct Hospital{
     disease_t *diseases;  //list of all of the diseases
 }hospital_t;
 
-static hospital_t *hospital;
+static hospital_t *hospital = NULL;
+static disease_t *tailDiseases = NULL;
+static patient_t *tailPatients = NULL;
+
 static int debugMode = 0;
 static int numberOfGlobalDiseases = 0;
 static int counterOfDiseases = 0; //needed for giving unique ids to diseases
@@ -124,24 +128,21 @@ patient_t *findPatient(char *name){
 }
 
 patient_t *addNewPatient(char *name){
-    patient_t *current = (patient_t *)&hospital->patients;
+    patient_t **current = &hospital->patients;
     patient_t *new = malloc(sizeof(patient_t));
     new->next = NULL;
     new->diseases = NULL;
+    new->tail = NULL;
     new->name = malloc((strlen(name) + 1) * sizeof(char));
     new->name = strcpy(new->name, name);
-    if (current){
-        while (current->next != NULL){
-            current = current->next;
-        }
-        current->next = new;
-        return current->next;
+    if (*current == NULL){
+        *current = new;
+        tailPatients = new;
+        return *current;
     }
-    else{
-        current = new;
-        return current;
-    }
-    //printPatients();
+    tailPatients->next = new;
+    tailPatients = tailPatients->next;
+    return tailPatients;
 }
 
 /*  *********************************   */
